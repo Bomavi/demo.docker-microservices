@@ -8,7 +8,7 @@ services:
     restart: always
     depends_on:
       - frontend
-      - backend
+      - api
       - auth
     volumes:
       - ./proxy/nginx-dev.conf:/etc/nginx/nginx.conf
@@ -25,18 +25,18 @@ services:
       dockerfile: docker-dev.dockerfile
     restart: always
     ports:
-      - 3000:3000
+      - 3000:80
     volumes:
       - ./../react-mobx-demo:/usr/src/app
     command: npm start
     depends_on:
-      - backend
+      - api
       - auth
     networks:
       - client
 
-  backend:
-    container_name: backend
+  api:
+    container_name: api
     build:
       context: ./../node-express-graphql-demo/
       dockerfile: docker-dev.dockerfile
@@ -48,9 +48,9 @@ services:
       DB_NAME: tasks
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      PORT: 9000
+      PORT: 80
     ports:
-      - 9000:9000
+      - 9000:80
     volumes:
       - ./../node-express-graphql-demo:/usr/src/app
       - ./tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
@@ -71,9 +71,9 @@ services:
       NODE_ENV: development
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      PORT: 4000
+      PORT: 80
     ports:
-      - 4000:4000
+      - 4000:80
     volumes:
       - ./../node-redis-auth-demo:/usr/src/app
       - ./tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh

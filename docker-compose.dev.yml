@@ -38,7 +38,7 @@ services:
   api:
     container_name: api
     build:
-      context: ./../node-express-graphql-demo/
+      context: ./../node-express-api-demo/
       dockerfile: docker-dev.dockerfile
     restart: always
     environment:
@@ -52,7 +52,7 @@ services:
     ports:
       - 9000:80
     volumes:
-      - ./../node-express-graphql-demo:/usr/src/app
+      - ./../node-express-api-demo:/usr/src/app
       - ./tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
     command: sh -c "wait-for-command.sh -c 'nc -z mongo 27017' && npm run dev"
     depends_on:
@@ -64,7 +64,7 @@ services:
   auth:
     container_name: auth
     build:
-      context: ./../node-redis-auth-demo/
+      context: ./../node-express-auth-demo/
       dockerfile: docker-dev.dockerfile
     restart: always
     environment:
@@ -75,7 +75,7 @@ services:
     ports:
       - 4000:80
     volumes:
-      - ./../node-redis-auth-demo:/usr/src/app
+      - ./../node-express-auth-demo:/usr/src/app
       - ./tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
     command: sh -c "wait-for-command.sh -c 'nc -z redis 6379' && npm run dev"
     depends_on:

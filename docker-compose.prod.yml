@@ -9,7 +9,7 @@ services:
     depends_on:
       - frontend
       - api
-      - auth
+      # - auth
     volumes:
       - ./proxy/nginx-prod.conf:/etc/nginx/nginx.conf
     ports:
@@ -28,7 +28,7 @@ services:
       - ./frontend/nginx-prod.conf:/etc/nginx/nginx.conf
     depends_on:
       - api
-      - auth
+      # - auth
     networks:
       - client
 
@@ -55,25 +55,25 @@ services:
       - client
       - server
 
-  auth:
-    container_name: auth
-    build:
-      context: ./../node-express-auth-demo/
-      dockerfile: docker-prod.dockerfile
-    restart: always
-    environment:
-      NODE_ENV: production
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      PORT: 80
-    volumes:
-      - ./tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
-    command: sh -c "wait-for-command.sh -c 'nc -z redis 6379' && npm run prod"
-    depends_on:
-      - redis
-    networks:
-      - client
-      - server
+  # auth:
+  #   container_name: auth
+  #   build:
+  #     context: ./../node-express-auth-demo/
+  #     dockerfile: docker-prod.dockerfile
+  #   restart: always
+  #   environment:
+  #     NODE_ENV: production
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     PORT: 80
+  #   volumes:
+  #     - ./tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
+  #   command: sh -c "wait-for-command.sh -c 'nc -z redis 6379' && npm run prod"
+  #   depends_on:
+  #     - redis
+  #   networks:
+  #     - client
+  #     - server
 
   redis:
     image: redis:alpine

@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+
+  proxy:
+    image: nginx:alpine
+    container_name: proxy
+    restart: always
+    depends_on:
+      - frontend
+      - api
+    volumes:
+      - ./../proxy/nginx-dev.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    networks:
+      - client
+      - server
+
+  frontend:
+    container_name: frontend_react_redux
+    build:
+      context: ./../../react-redux-demo/
+      dockerfile: docker-dev.dockerfile
+    restart: always
+    ports:
+      - 3000:80
+    volumes:
+      - ./../../react-redux-demo:/usr/src/app
+    command: npm start
+    depends_on:
+      - api
+    networks:
+      - client
+
+  api:
+    container_name: api
+    build:
+      context: ./../../node-express-api-demo/
+      dockerfile: docker-dev.dockerfile
+    restart: always
+    environment:
+      NODE_ENV: development
+      MONGO_DB_HOST: mongodb://mongo
+      MONGO_DB_PORT: 27017
+      DB_NAME: tasks
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 80
+    ports:
+      - 9000:80
+    volumes:
+      - ./../../node-express-api-demo:/usr/src/app
+      - ./../tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
+    command: sh -c "wait-for-command.sh -c 'nc -z mongo 27017' && npm run dev"
+    depends_on:
+      - mongo
+    networks:
+      - client
+      - server
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - server
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    volumes:
+      - ./../../data/mongodb:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - server
+
+networks:
+  client:
+    driver: bridge
+  server:
+    driver: bridge

@@ -9,9 +9,8 @@ services:
     depends_on:
       - frontend
       - api
-      # - auth
     volumes:
-      - ./proxy/nginx-prod.conf:/etc/nginx/nginx.conf
+      - ./../proxy/nginx-prod.conf:/etc/nginx/nginx.conf
     ports:
       - 80:80
     networks:
@@ -19,23 +18,22 @@ services:
       - server
 
   frontend:
-    container_name: frontend
+    container_name: frontend_react_mobx
     build:
-      context: ./../react-mobx-demo/
+      context: ./../../react-mobx-demo/
       dockerfile: docker-prod.dockerfile
     restart: always
     volumes:
-      - ./frontend/nginx-prod.conf:/etc/nginx/nginx.conf
+      - ./../frontend/nginx-prod.conf:/etc/nginx/nginx.conf
     depends_on:
       - api
-      # - auth
     networks:
       - client
 
   api:
     container_name: api
     build:
-      context: ./../node-express-api-demo/
+      context: ./../../node-express-api-demo/
       dockerfile: docker-prod.dockerfile
     restart: always
     environment:
@@ -47,33 +45,13 @@ services:
       REDIS_PORT: 6379
       PORT: 80
     volumes:
-      - ./tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
+      - ./../tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
     command: sh -c "wait-for-command.sh -c 'nc -z mongo 27017' && npm run prod"
     depends_on:
       - mongo
     networks:
       - client
       - server
-
-  # auth:
-  #   container_name: auth
-  #   build:
-  #     context: ./../node-express-auth-demo/
-  #     dockerfile: docker-prod.dockerfile
-  #   restart: always
-  #   environment:
-  #     NODE_ENV: production
-  #     REDIS_HOST: redis
-  #     REDIS_PORT: 6379
-  #     PORT: 80
-  #   volumes:
-  #     - ./tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
-  #   command: sh -c "wait-for-command.sh -c 'nc -z redis 6379' && npm run prod"
-  #   depends_on:
-  #     - redis
-  #   networks:
-  #     - client
-  #     - server
 
   redis:
     image: redis:alpine
@@ -89,7 +67,7 @@ services:
     container_name: mongo
     restart: always
     volumes:
-      - ./../data/mongodb:/data/db
+      - ./../../data/mongodb:/data/db
     ports:
       - 27017:27017
     networks:

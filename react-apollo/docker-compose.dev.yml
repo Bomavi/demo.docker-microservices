@@ -1,0 +1,97 @@
+version: '3'
+
+services:
+
+  proxy:
+    image: nginx:alpine
+    container_name: proxy
+    restart: always
+    depends_on:
+      - frontend
+      - graphql
+    volumes:
+      - ./../proxy-gql/nginx-dev.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    networks:
+      - client
+      - server
+
+  frontend:
+    container_name: frontend_react_apollo
+    build:
+      context: ./../../react-apollo-demo/
+      dockerfile: docker-dev.dockerfile
+    restart: always
+    ports:
+      - 3000:80
+    volumes:
+      - ./../../react-apollo-demo:/usr/src/app
+    command: npm start
+    depends_on:
+      - graphql
+    networks:
+      - client
+
+  graphql:
+    container_name: graphql
+    build:
+      context: ./../../node-express-graphql-demo/
+      dockerfile: docker-dev.dockerfile
+    restart: always
+    environment:
+      NODE_ENV: development
+      POSTGRES_DB_HOST: host.docker.internal
+      POSTGRES_DB_PORT: 5432
+      POSTGRES_DB_NAME: tasks
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 80
+    ports:
+      - 9000:80
+    volumes:
+      - ./../../node-express-graphql-demo:/usr/src/app
+    command: npm run dev
+    depends_on:
+      - postgres
+    networks:
+      - client
+      - server
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - server
+  
+  postgres:
+    image: postgres:alpine
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: tasks
+    volumes:
+      - ./../../data/postgresdb:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - server
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+networks:
+  client:
+    driver: bridge
+  server:
+    driver: bridge

@@ -53,7 +53,8 @@ services:
       - 9000:80
     volumes:
       - ./../../node-express-graphql-demo:/usr/src/app
-    command: npm run dev
+      - ./../tools/wait-for-command.sh:/usr/local/bin/wait-for-command.sh
+    command: sh -c "wait-for-command.sh -c 'nc -z postgres 5432' && npm run dev"
     depends_on:
       - postgres
     networks:
